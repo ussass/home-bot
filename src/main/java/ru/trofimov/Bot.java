@@ -2,6 +2,8 @@ package ru.trofimov;
 
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
@@ -31,7 +33,34 @@ public class Bot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        System.out.println("update.getMessage().getText() = " + update.getMessage().getText());
+        
+        if (update.hasMessage()){
+            try {
+                handleMessage(update.getMessage());
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
+        } else if (update.hasCallbackQuery()){
+            try {
+                handleCallback(update.getCallbackQuery());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    private void handleMessage(Message message) throws TelegramApiException {
+        if (message.hasText() && message.hasEntities()) {
+            System.out.println("[" + message.getChatId() + "] " + message.getText());
+            TextHandle textHandle = new TextHandle(message);
+            execute(textHandle.getSendMessage());
+            return;
+        }
+    }
+
+    private void handleCallback(CallbackQuery callbackQuery) throws TelegramApiException {
+
     }
 
     public static void main(String[] args) {
