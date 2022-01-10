@@ -2,6 +2,7 @@
 /shelf/
 /.idea/
 /target/
+/src/main/resources/botConfig.properties
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
