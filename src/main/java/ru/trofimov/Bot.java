@@ -16,9 +16,19 @@ public class Bot extends TelegramLongPollingBot {
     private final String botUsername;
     private final String botToken;
 
+    private static String mode;
+
     public Bot(String botUsername, String botToken) {
         this.botUsername = botUsername;
         this.botToken = botToken;
+    }
+
+    public static void setMode(String mode) {
+        Bot.mode = mode;
+    }
+
+    public static String getMode() {
+        return mode;
     }
 
     @Override
@@ -33,34 +43,35 @@ public class Bot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        
-        if (update.hasMessage()){
+
+        if (update.hasMessage()) {
             try {
                 handleMessage(update.getMessage());
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
-        } else if (update.hasCallbackQuery()){
+        } else if (update.hasCallbackQuery()) {
             try {
                 handleCallback(update.getCallbackQuery());
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-
     }
 
     private void handleMessage(Message message) throws TelegramApiException {
+        System.out.println("[" + message.getChatId() + "] " + message.getText());
+        TextHandle textHandle = new TextHandle(message);
         if (message.hasText() && message.hasEntities()) {
-            System.out.println("[" + message.getChatId() + "] " + message.getText());
-            TextHandle textHandle = new TextHandle(message);
             execute(textHandle.getSendMessage());
-            return;
+        } else if (message.hasText()) {
+            execute(textHandle.getSendMessageByText());
         }
     }
 
     private void handleCallback(CallbackQuery callbackQuery) throws TelegramApiException {
-
+        CallbackQueryHandle callbackQueryHandle = new CallbackQueryHandle(callbackQuery);
+        execute(callbackQueryHandle.getSendMessage());
     }
 
     public static void main(String[] args) {
