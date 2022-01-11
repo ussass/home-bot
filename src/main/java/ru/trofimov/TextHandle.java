@@ -3,9 +3,14 @@ package ru.trofimov;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.trofimov.service.WaterService;
 import ru.trofimov.service.impl.WaterServiceImpl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 public class TextHandle {
@@ -25,10 +30,18 @@ public class TextHandle {
             switch (command) {
                 case "/water_readings":
                     WaterService waterServiceGet = new WaterServiceImpl();
-                    sendMessage = SendMessage.builder()
-                            .text(waterServiceGet.getReadings())
-                            .chatId(message.getChatId().toString())
-                            .build();
+                    if (message.getChatId() == 265956961){
+                        sendMessage = SendMessage.builder()
+                                .text(waterServiceGet.getReadings())
+                                .chatId(message.getChatId().toString())
+                                .replyMarkup(InlineKeyboardMarkup.builder().keyboard(getListsButtons()).build())
+                                .build();
+                    } else {
+                        sendMessage = SendMessage.builder()
+                                .text(waterServiceGet.getReadings())
+                                .chatId(message.getChatId().toString())
+                                .build();
+                    }
                     break;
                 default:
                     sendMessage = SendMessage.builder()
@@ -39,5 +52,33 @@ public class TextHandle {
         }
 
         return sendMessage;
+    }
+
+    public SendMessage getSendMessageByText(){
+        SendMessage sendMessage = null;
+
+        if(Bot.getMode().equals("setReadings")){
+            WaterService waterService = new WaterServiceImpl();
+            sendMessage = SendMessage.builder().chatId(message.getChatId().toString())
+                    .text(waterService.setReadings(message.getText()))
+                    .build();
+            Bot.setMode("");
+
+        }
+        return sendMessage;
+    }
+
+    private List<List<InlineKeyboardButton>> getListsButtons() {
+        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+        buttons.add(Arrays.asList(
+                InlineKeyboardButton.builder()
+                        .text("Set readings")
+                        .callbackData("set_readings")
+                        .build(),
+                InlineKeyboardButton.builder()
+                        .text("Test Button")
+                        .callbackData("Test data")
+                        .build()));
+        return buttons;
     }
 }
